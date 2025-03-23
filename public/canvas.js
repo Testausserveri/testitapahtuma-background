@@ -8,7 +8,7 @@ let starsBackgroundCount = 2600
 let starsBackgroundSpeed = 0.001
 let starsBackgroundDepth = 0.1
 
-let starDelta = 0
+let starDelta = 0 // Dynamic, keep at 0
 const starSpeedVariance = 0.002
 
 const errorsBackgroundCount = 20
@@ -18,7 +18,7 @@ const errorsLifetimeIncrement = 0.0004
 
 const bannerTextDashIncrement = 0.2
 
-let dashDelta = 0
+let dashDelta = 0 // Dynamic, keep at 0
 const dashVariance = 0.2
 
 
@@ -185,7 +185,6 @@ const slideContents = [
     ],
     [
         "OPSEC: Virheet eivät satu sattumalta",
-        "***REMOVED***",
         "PVJJK"
     ],
     [

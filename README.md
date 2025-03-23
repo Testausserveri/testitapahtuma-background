@@ -6,6 +6,10 @@ Of course you can change the logic in picking the audio device to overcome this 
 
 Configuration is static in the `canvas.js` file and partially documented.
 
+**Running it**
+Run the simple web server to serve the files with `node server`, then allow the insecure page to access the Microphone in your Browser's settings for the specific page.
+This is required for unsecure origins.
+
 **License (MIT)**
 ```
 Copyright 2025 Testausserveri ry
