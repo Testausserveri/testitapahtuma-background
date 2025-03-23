@@ -1,0 +1,25 @@
+@font-face {
+    font-family: Poppins-Bold;
+    src: url(./Poppins-Bold.ttf);
+}
+
+body, html {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+    overflow: hidden;
+}
+
+#main {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: 0px;
+    left: 0px;
+    background: radial-gradient(ellipse at center, #111216, #000 100%);
+}
