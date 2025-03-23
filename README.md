@@ -8,7 +8,7 @@ Configuration is static in the `canvas.js` file and partially documented.
 
 **Running It**
 
-Run the simple web server to serve the files with `node server`. Then allow the insecure page to access the microphone in your btowser's settings for the specific page. This is often required for insecure origins.
+Run the simple web server to serve the files with `node server`. Then allow the insecure page to access the microphone in your browser's settings for the specific page. This is often required for insecure origins.
 
 **License (MIT)**
 
