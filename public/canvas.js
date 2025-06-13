@@ -155,7 +155,7 @@ function renderErrorTextBackground(options) {
 
 // Banner text
 let bannerTextDashOffset = 0
-function renderBannerText(options) {
+function renderBannerText(text, options) {
     bannerTextDashOffset += bannerTextDashIncrement + dashDelta
     if (bannerTextDashIncrement > 100) bannerTextDashIncrement = 0
     context.fillStyle = "rgb(255, 255, 255)"
@@ -168,33 +168,26 @@ function renderBannerText(options) {
         context.lineDashOffset = bannerTextDashOffset
     }
     const mode = options?.outline === true ? "strokeText" : "fillText"
-    context[mode]("Testitapahtuma", surface.width / 2, surface.height / 2 + 20)
+    context[mode](text, surface.width / 2, surface.height / 2 + 20)
 }
 
 // Slide
 const slideContents = [
-    [""], // Blank
-    // Welcome slide
     [
-        "Tervetuloa Testitapahtumaan!",
-        "> Avauspuhe <"
+        "CTF",
+        "Osallistu CTF-kilpailuun!",
+        "> ctf.vectorama.info <"
     ],
     [
-        "Näkökulma Kyberiin",
-        "Elisa"
-    ],
-    [
-        "OPSEC: Virheet eivät satu sattumalta",
-        "PVJJK"
-    ],
-    [
-        "Miten poliisi torjuu ja estää vakavaa kyberrikollisuutta?",
-        "KRP"
-    ],
-    [
-        "Flashtalks!"
+        "Testausserveri",
+        "Kysy Testausserveristä!",
+        "Liity Discordiin: discord.testausserveri.fi"
     ]
 ]
+
+let justSolvedTimeout = null
+let justSolved = null
+
 function renderSlide(options) {
     context.fillStyle = "rgb(255, 255, 255)"
     context.strokeStyle = "rgb(255, 255, 255)"
@@ -202,10 +195,34 @@ function renderSlide(options) {
     context.font = `${fontSize}px Poppins-Bold`
     context.textAlign = "center"
     context.textBaseline = "middle"
-    for (let i = 0; i < slideContents[options.slide].length; i++) {
+    if (justSolved) context.fillText(justSolved, surface.width / 2, 180)
+    for (let i = 1; i < slideContents[options.slide].length; i++) {
         const line = slideContents[options.slide][i]
         context.fillText(line, surface.width / 2, 180 + (surface.height / 2) + (i * fontSize * 1.6))
     }
+}
+
+function startEvents() {
+    let restartTimeout = null
+    function startEventSource() {
+        const es = new EventSource("/events");
+        es.onmessage = (event) => {
+            const {user, challenge} = JSON.parse(event.data);
+            justSolved = `${user} ratkaisi juuri haasteen ${challenge}!`
+            if (justSolvedTimeout) clearTimeout(justSolvedTimeout)
+            justSolvedTimeout = setTimeout(() => {
+                justSolved = null
+                justSolvedTimeout = null
+            }, 60_000)
+        };
+        es.onerror = (event) => {
+            console.error("EventSource failed:", event);
+            if (restartTimeout) clearTimeout(restartTimeout);
+            restartTimeout = setTimeout(startEventSource, 100);
+            es.close();
+        };
+    }
+    startEventSource();
 }
 
 // Anything that counts as setup
@@ -217,9 +234,15 @@ async function init() {
     renderStarsBackground({ init: true })
     renderErrorTextBackground({ init: true })
 
-    const { dataArray, fftSize } = await listenToLineIn(1024)
+    startEvents()
 
-    fftData = dataArray
+
+    setInterval(() => {
+        slide = (slide + 1) % slideContents.length
+    }, 10_000)
+//    const { dataArray, fftSize } = await listenToLineIn(1024)
+
+//    fftData = dataArray
 }
 
 // Reset util
@@ -238,7 +261,7 @@ function resetContext() {
 
 // Main render function executed for each frame(ish)
 let prevLowFreq = 0  // Store previous value for comparison
-let musicMode = true
+let musicMode = false
 let slide = 0
 let warpSpeed = false
 async function render() {
@@ -280,7 +303,7 @@ async function render() {
     resetContext()
 
     // Banner text
-    renderBannerText({ outline: musicMode, dash: musicMode })
+    renderBannerText(slideContents[slide][0], { outline: true, dash: true })
     resetContext()
 
     // Slides
@@ -296,7 +319,8 @@ async function listenToLineIn(fftSize = 256) {
     const devices = await navigator.mediaDevices.enumerateDevices()
 
     // Resolve audio device
-    const stereoMixDevice = devices.filter((device) => device.label.toLowerCase().startsWith("cable output"))[0]
+    //const stereoMixDevice = devices.filter((device) => device.label.toLowerCase().startsWith("cable output"))[0]
+    const stereoMixDevice = devices.filter((device) => device.kind.toLowerCase().startsWith("audioinput"))[0]
     if (!stereoMixDevice) throw new Error("Unable to resolve audio device")
 
     // Resolve audio stream
